@@ -16,18 +16,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Check if Chitti is already registered
+    // Check if Chitti is already registered AND has skills
     const existingChitti = Database.findAgent('chitti_agent_001');
-    if (existingChitti) {
+    const existingSkills = Database.getSkillsByAgent('chitti_agent_001');
+    
+    if (existingChitti && existingSkills.length >= 4) {
       return res.status(200).json({
-        message: 'Chitti already registered',
+        message: 'Chitti already registered with full skills',
         agent: existingChitti,
-        skillCount: Database.getSkillsByAgent('chitti_agent_001').length
+        skillCount: existingSkills.length,
+        skills: existingSkills.map(s => s.skillName)
       });
     }
+    
+    // If agent exists but skills missing, re-add skills
+    let chittiAgent = existingChitti;
 
-    // Register Chitti agent dynamically
-    const chittiAgent = {
+    // Register Chitti agent dynamically if not exists
+    if (!chittiAgent) {
+      chittiAgent = {
       id: 'chitti_agent_001',
       name: 'Chitti',
       ownerTwitter: '@akhil_bvs',
@@ -38,7 +45,8 @@ export default async function handler(req, res) {
       status: 'active'
     };
 
-    Database.addAgent(chittiAgent);
+      Database.addAgent(chittiAgent);
+    }
 
     // Register Chitti's skills dynamically
     const chittiSkills = [
