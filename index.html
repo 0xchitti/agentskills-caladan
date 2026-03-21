@@ -569,7 +569,16 @@
             }
             
             // Apply search filter
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const searchInput = document.getElementById('searchInput');
+            const mobileSearchInput = document.getElementById('mobileSearchInput');
+            
+            let searchTerm = '';
+            if (searchInput && searchInput.value) {
+                searchTerm = searchInput.value.toLowerCase();
+            } else if (mobileSearchInput && mobileSearchInput.value) {
+                searchTerm = mobileSearchInput.value.toLowerCase();
+            }
+            
             if (searchTerm) {
                 filteredSkills = filteredSkills.filter(skill => 
                     skill.skillName.toLowerCase().includes(searchTerm) ||
@@ -849,43 +858,56 @@
 
         // Update mobile categories as well
         function updateCategories(skills) {
-            allSkills = skills;
-            const categories = [...new Set(skills.map(skill => skill.category))].sort();
-            
-            // Update desktop categories
-            const categoriesList = document.getElementById('categories-list');
-            let html = `<div class="category-item ${currentFilter === 'all' ? 'active' : ''}" onclick="filterSkills('all')" style="font-size: 0.6rem; color: var(--fg-${currentFilter === 'all' ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0;">All Systems</div>`;
-            
-            categories.forEach(category => {
-                const isActive = currentFilter === category.toLowerCase();
-                html += `<div class="category-item ${isActive ? 'active' : ''}" onclick="filterSkills('${category.toLowerCase()}')" style="font-size: 0.6rem; color: var(--fg-${isActive ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0;">${category}</div>`;
-            });
-            
-            categoriesList.innerHTML = html;
+            try {
+                allSkills = skills;
+                const categories = [...new Set(skills.map(skill => skill.category))].sort();
+                
+                // Update desktop categories
+                const categoriesList = document.getElementById('categories-list');
+                if (categoriesList) {
+                    let html = `<div class="category-item ${currentFilter === 'all' ? 'active' : ''}" onclick="filterSkills('all')" style="font-size: 0.6rem; color: var(--fg-${currentFilter === 'all' ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0;">All Systems</div>`;
+                    
+                    categories.forEach(category => {
+                        const isActive = currentFilter === category.toLowerCase();
+                        html += `<div class="category-item ${isActive ? 'active' : ''}" onclick="filterSkills('${category.toLowerCase()}')" style="font-size: 0.6rem; color: var(--fg-${isActive ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0;">${category}</div>`;
+                    });
+                    
+                    categoriesList.innerHTML = html;
+                }
 
-            // Update mobile categories
-            const mobileCategoriesList = document.getElementById('mobile-categories-list');
-            let mobileHtml = `<div class="category-item ${currentFilter === 'all' ? 'active' : ''}" onclick="filterSkills('all'); closeMobileMenu();" style="font-size: 0.6rem; color: var(--fg-${currentFilter === 'all' ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0; min-height: 44px; display: flex; align-items: center;">All Systems</div>`;
-            
-            categories.forEach(category => {
-                const isActive = currentFilter === category.toLowerCase();
-                mobileHtml += `<div class="category-item ${isActive ? 'active' : ''}" onclick="filterSkills('${category.toLowerCase()}'); closeMobileMenu();" style="font-size: 0.6rem; color: var(--fg-${isActive ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0; min-height: 44px; display: flex; align-items: center;">${category}</div>`;
-            });
-            
-            mobileCategoriesList.innerHTML = mobileHtml;
+                // Update mobile categories
+                const mobileCategoriesList = document.getElementById('mobile-categories-list');
+                if (mobileCategoriesList) {
+                    let mobileHtml = `<div class="category-item ${currentFilter === 'all' ? 'active' : ''}" onclick="filterSkills('all'); closeMobileMenu();" style="font-size: 0.6rem; color: var(--fg-${currentFilter === 'all' ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0; min-height: 44px; display: flex; align-items: center;">All Systems</div>`;
+                    
+                    categories.forEach(category => {
+                        const isActive = currentFilter === category.toLowerCase();
+                        mobileHtml += `<div class="category-item ${isActive ? 'active' : ''}" onclick="filterSkills('${category.toLowerCase()}'); closeMobileMenu();" style="font-size: 0.6rem; color: var(--fg-${isActive ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0; min-height: 44px; display: flex; align-items: center;">${category}</div>`;
+                    });
+                    
+                    mobileCategoriesList.innerHTML = mobileHtml;
+                }
+            } catch (error) {
+                console.error('Error updating categories:', error);
+            }
         }
 
         // Sync mobile search with main search
         function searchSkills() {
-            const searchTerm = document.getElementById('searchInput').value;
-            const mobileSearchTerm = document.getElementById('mobileSearchInput').value;
+            const searchInput = document.getElementById('searchInput');
+            const mobileSearchInput = document.getElementById('mobileSearchInput');
             
-            // Sync search boxes
-            if (searchTerm !== mobileSearchTerm) {
-                if (document.activeElement.id === 'mobileSearchInput') {
-                    document.getElementById('searchInput').value = mobileSearchTerm;
-                } else {
-                    document.getElementById('mobileSearchInput').value = searchTerm;
+            if (searchInput && mobileSearchInput) {
+                const searchTerm = searchInput.value;
+                const mobileSearchTerm = mobileSearchInput.value;
+                
+                // Sync search boxes
+                if (searchTerm !== mobileSearchTerm) {
+                    if (document.activeElement && document.activeElement.id === 'mobileSearchInput') {
+                        searchInput.value = mobileSearchTerm;
+                    } else {
+                        mobileSearchInput.value = searchTerm;
+                    }
                 }
             }
             
