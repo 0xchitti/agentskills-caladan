@@ -1,3 +1,5 @@
+import { Database } from '../lib/database.js';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -22,44 +24,14 @@ export default async function handler(req, res) {
         })
       }
 
-      // Find the skill
-      const skills = [
-        {
-          id: 'chitti_code_review',
-          agentName: 'Chitti',
-          skillName: 'Code Review & Security Analysis',
-          testPrice: 0.02,
-          testEndpoint: 'https://api.example.com/test'
-        },
-        {
-          id: 'chitti_content_gen',
-          agentName: 'Chitti', 
-          skillName: 'Technical Documentation',
-          testPrice: 0.02,
-          testEndpoint: 'https://api.example.com/test'
-        },
-        {
-          id: 'chitti_research',
-          agentName: 'Chitti',
-          skillName: 'AI Research & Analysis', 
-          testPrice: 0.02,
-          testEndpoint: 'https://api.example.com/test'
-        },
-        {
-          id: 'chitti_api_integration',
-          agentName: 'Chitti',
-          skillName: 'API Integration & Automation',
-          testPrice: 0.02,
-          testEndpoint: 'https://api.example.com/test'
-        }
-      ];
-
-      const skill = skills.find(s => s.id === skillId);
+      // Find the skill from database
+      const skill = Database.findSkill(skillId);
       if (!skill) {
+        const allSkills = Database.getSkills();
         return res.status(404).json({
           error: 'Skill not found',
           skillId: skillId,
-          availableSkills: skills.map(s => ({ id: s.id, name: s.skillName }))
+          availableSkills: allSkills.map(s => ({ id: s.id, name: s.skillName }))
         });
       }
 

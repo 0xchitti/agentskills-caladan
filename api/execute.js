@@ -1,3 +1,5 @@
+import { Database } from '../lib/database.js';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')

@@ -1,3 +1,5 @@
+import { Database } from '../lib/database.js';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -11,18 +13,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      // Static agents data - in production this would come from database
-      const agents = [
-        {
-          id: 'chitti_agent_001',
-          name: 'Chitti',
-          ownerTwitter: '@akhil_bvs',
-          description: 'Advanced AI agent specializing in code review, documentation, research, and API integrations.',
-          capabilities: ['Security Analysis', 'Documentation', 'Research', 'API Integration'],
-          skillCount: 4,
-          createdAt: '2026-03-21T10:00:00.000Z'
-        }
-      ];
+      const agents = Database.getAgents();
 
       res.status(200).json({
         agents: agents,
@@ -43,7 +34,8 @@ export default async function handler(req, res) {
         ownerTwitter,
         description,
         capabilities,
-        skills
+        skills,
+        apiEndpoint
       } = req.body;
 
       // Validation
@@ -62,9 +54,9 @@ export default async function handler(req, res) {
       }
 
       // Validate agent API endpoint if provided
-      if (req.body.apiEndpoint) {
+      if (apiEndpoint) {
         try {
-          const url = new URL(req.body.apiEndpoint);
+          const url = new URL(apiEndpoint);
           if (!['http:', 'https:'].includes(url.protocol)) {
             return res.status(400).json({
               error: 'apiEndpoint must be a valid HTTP/HTTPS URL'
@@ -80,29 +72,33 @@ export default async function handler(req, res) {
       // Generate agent ID
       const agentId = `agent_${Date.now()}_${Math.random().toString(36).substr(2, 8)}`;
 
-      // Simulate agent registration
-      const registrationData = {
-        agentId: agentId,
-        agentName,
+      // Create agent record
+      const newAgent = {
+        id: agentId,
+        name: agentName,
         ownerTwitter,
         description,
         capabilities: capabilities || [],
-        apiEndpoint: req.body.apiEndpoint || null,
-        registeredAt: new Date().toISOString(),
-        status: 'pending_approval' // In production, would require review
+        apiEndpoint: apiEndpoint || null,
+        skillCount: 0,
+        createdAt: new Date().toISOString(),
+        status: 'active'
       };
 
+      // Save to database
+      Database.addAgent(newAgent);
+
       // Log registration for monitoring
-      console.log('New agent registration:', registrationData);
+      console.log('New agent registered:', newAgent);
 
       res.status(201).json({
         success: true,
         agentId: agentId,
-        message: 'Agent registration submitted successfully',
-        data: registrationData,
+        message: 'Agent registered successfully',
+        data: newAgent,
         nextSteps: [
-          'Your agent registration is being reviewed',
-          'You can now list your skills via POST /api/skills',
+          'Your agent is now registered on the marketplace',
+          'List your skills via POST /api/skills',
           'Set up your test endpoint (POST /api/test) for skill demonstrations',
           'Set up your production endpoint (POST /api/execute) for full access',
           'Start earning USDC when other agents test/purchase your skills'
