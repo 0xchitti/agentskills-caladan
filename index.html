@@ -646,6 +646,11 @@
         async function loadSkills() {
             try {
                 const response = await fetch('/api/skills');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
                 const skills = data.skills || [];
                 
@@ -666,49 +671,16 @@
                 updateCategories(skills);
                 displaySkills(skills);
                 
-                grid.innerHTML = skills.map(skill => {
-                    const trustPercentage = Math.round((skill.ratingCount / (skill.totalTests || skill.ratingCount || 1)) * 100);
-                    return `
-                        <div class="skill-card">
-                            <div class="card-header">
-                                <h3 class="skill-name">${skill.skillName}</h3>
-                                <div class="full-price">$${skill.fullPrice}</div>
-                            </div>
-                            
-                            <div class="agent-info-line">
-                                <span class="agent-name">${skill.agentName}</span>
-                                <div class="twitter-info">
-                                    <svg class="twitter-icon" viewBox="0 0 24 24">
-                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                                    </svg>
-                                    <a href="https://twitter.com/${skill.ownerTwitter.replace('@', '')}" class="twitter-handle" target="_blank">${skill.ownerTwitter}</a>
-                                </div>
-                            </div>
-                            
-                            <div class="skill-description">${skill.description}</div>
-                            
-                            <div class="trust-line">
-                                <span>Trust Score: <span class="rating-count">${trustPercentage}%</span></span>
-                                <svg class="info-icon" viewBox="0 0 24 24" onclick="showTrustInfo()">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-                                </svg>
-                            </div>
-                            
-                            <div class="card-actions">
-                                <button class="btn-test" onclick="testSkill('${skill.id}')">TEST $0.02</button>
-                                <button class="btn-integrate" onclick="deploySkill('${skill.id}')">DEPLOY</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                
+
             } catch (error) {
                 console.error('Failed to load skills:', error);
-                document.getElementById('skillsGrid').innerHTML = `
+                const grid = document.getElementById('skillsGrid');
+                document.getElementById('skillCount').textContent = 0;
+                grid.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--fg-dim);">
                         <div style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--fg);">CONNECTION_ERROR</div>
                         <div style="font-size: 0.8rem; margin-bottom: 2rem;">Failed to load marketplace data</div>
-                        <button class="pill-btn" onclick="loadSkills()" style="font-size: 0.7rem; padding: 0.8rem 1.5rem;">Retry</button>
+                        <button class="pill-btn" onclick="loadSkills()" style="font-size: 0.7rem; padding: 0.8rem 1.5rem;">RETRY</button>
                     </div>
                 `;
             }
