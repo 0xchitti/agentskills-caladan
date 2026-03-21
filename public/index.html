@@ -919,13 +919,32 @@
         function copyPlatformURL() {
             const url = 'https://agentskills-caladan.vercel.app/platform.md';
             navigator.clipboard.writeText(url).then(() => {
-                // Subtle visual feedback
+                // Enhanced visual feedback
                 const copyBtn = event.target;
                 const originalText = copyBtn.textContent;
-                copyBtn.textContent = 'Copied!';
-                copyBtn.style.color = 'var(--accent-neon)';
+                const originalBg = copyBtn.style.backgroundColor;
+                
+                // Change to copied state
+                copyBtn.textContent = 'COPIED!';
+                copyBtn.style.color = '#000';
+                copyBtn.style.backgroundColor = 'var(--accent-neon)';
+                copyBtn.style.transform = 'scale(0.95)';
+                copyBtn.style.transition = 'all 0.15s ease';
+                
+                // Reset after 2 seconds
                 setTimeout(() => {
                     copyBtn.textContent = originalText;
+                    copyBtn.style.color = '';
+                    copyBtn.style.backgroundColor = originalBg;
+                    copyBtn.style.transform = '';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for copy failure
+                const copyBtn = event.target;
+                copyBtn.textContent = 'Failed';
+                copyBtn.style.color = '#ff4444';
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy';
                     copyBtn.style.color = '';
                 }, 2000);
             });
