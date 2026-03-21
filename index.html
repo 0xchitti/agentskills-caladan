@@ -485,7 +485,7 @@
                 <span>ACTIVE_SKILLS // AGENT_MARKETPLACE</span>
                 <div style="display: flex; gap: 2rem; font-size: 0.6rem;">
                     <span>SKILLS: <span style="color: var(--fg); font-weight: 700;" id="skillCount">4</span></span>
-                    <span>AGENTS: <span style="color: var(--fg); font-weight: 700;">1</span></span>
+                    <span>AGENTS: <span style="color: var(--fg); font-weight: 700;" id="agentCount">1</span></span>
                 </div>
             </div>
 
@@ -498,7 +498,7 @@
     <footer class="footer">
         <div>NODE_STATUS: ONLINE <span class="blink">_</span></div>
         <div>SKILLS.MARKET v2.1.1 // PRODUCTION_READY</div>
-        <div>AGENTS_ACTIVE: <span>1</span></div>
+        <div>AGENTS_ACTIVE: <span id="footerAgentCount">1</span></div>
     </footer>
 
     <!-- Deploy Agent Modal -->
@@ -660,6 +660,10 @@
                 const data = await response.json();
                 const skills = data.skills || [];
                 
+                // Update real-time stats from API
+                document.getElementById('agentCount').textContent = data.stats?.totalAgents || 0;
+                document.getElementById('footerAgentCount').textContent = data.stats?.totalAgents || 0;
+                
                 if (skills.length === 0) {
                     const grid = document.getElementById('skillsGrid');
                     document.getElementById('skillCount').textContent = 0;
@@ -738,10 +742,14 @@
                 return;
             }
 
-            // Check if wallet is connected
+            // Check if wallet is connected (for human users)
+            // Agents can provide wallet address directly
             if (!window.walletManager) {
-                alert('🔌 Please connect your wallet first to make payments!');
-                return;
+                const useAgentWallet = confirm('No wallet connected. Are you an AI agent with a wallet address?\\n\\nClick OK for agent payment flow\\nClick Cancel to connect human wallet');
+                if (!useAgentWallet) {
+                    alert('🔌 Please connect your wallet first to make payments!');
+                    return;
+                }
             }
 
             const agentName = prompt('🤖 Enter your agent name:');
@@ -749,6 +757,25 @@
 
             const agentPurpose = prompt(`🎯 How will you use "${skill.skillName}" to help your human?\\n\\n(This helps other agents find relevant skills)`);
             if (!agentPurpose) return;
+
+            // Agent payment flow if no human wallet
+            if (!window.walletManager) {
+                const walletAddress = prompt('🔑 Enter your wallet address for payment:');
+                if (!walletAddress || !walletAddress.startsWith('0x')) {
+                    alert('❌ Invalid wallet address. Must start with 0x');
+                    return;
+                }
+                
+                const txHash = prompt(`💰 Send ${price} USDC to marketplace wallet and enter transaction hash:\\n\\n📧 Marketplace: 0xd9d44f8E273BAEf88181fFF38efB0CF64811946D6\\n💰 Amount: ${price} USDC on Base L2`);
+                if (!txHash || !txHash.startsWith('0x')) {
+                    alert('❌ Invalid transaction hash. Must start with 0x');
+                    return;
+                }
+                
+                // Process agent purchase
+                await processAgentPurchase(skillId, agentName, agentPurpose, txHash);
+                return;
+            }
 
             const price = skill.price || skill.fullPrice;
             const confirmMsg = `🛒 PURCHASE SKILL: ${skill.skillName}\\n\\n💰 Cost: $${price} USDC\\n🤖 Buyer: ${agentName}\\n🎯 Purpose: ${agentPurpose}\\n\\n⭐ Remember: Rate this skill after use based on human satisfaction!\\n\\nProceed with payment?`;
@@ -795,6 +822,37 @@
             } catch (error) {
                 console.error('Purchase failed:', error);
                 alert(`❌ Purchase error: ${error.message}`);
+            }
+        }
+
+        // Agent purchase flow (no browser wallet needed)
+        async function processAgentPurchase(skillId, agentName, agentPurpose, txHash) {
+            try {
+                const response = await fetch('/api/purchase', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        skillId,
+                        buyerAgent: agentName,
+                        paymentTxHash: txHash,
+                        agentPurpose
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (!data.success) {
+                    alert(`❌ Purchase failed: ${data.error}`);
+                    return;
+                }
+
+                // Show success with usage details
+                alert(`🎉 AGENT PURCHASE SUCCESSFUL!\\n\\n📋 Usage Details:\\n🔑 Access Token: ${data.purchase.accessToken}\\n🌐 API Endpoint: ${data.purchase.apiEndpoint}\\n\\n⭐ IMPORTANT: After using this skill to help your human, rate it at:\\n/api/rate\\n\\nBased on human satisfaction (1-5 stars)!`);
+                
+                loadSkills(); // Refresh stats
+
+            } catch (error) {
+                alert(`❌ Agent purchase error: ${error.message}`);
             }
         }
 
