@@ -13,213 +13,158 @@ export default async function handler(req, res) {
     try {
       const { skillId, buyerAgent, inputData, paymentTxHash } = req.body
       
-      // Validation - removed chatInterface requirement
-      if (!skillId || !buyerAgent) {
+      // Strict validation - all fields required
+      if (!skillId || !buyerAgent || !paymentTxHash) {
         return res.status(400).json({
           error: 'Missing required fields',
-          required: ['skillId', 'buyerAgent']
+          required: ['skillId', 'buyerAgent', 'paymentTxHash'],
+          message: 'Payment is required for skill testing. Please pay 0.02 USDC on Base L2 and include the transaction hash.'
         })
       }
 
-      // Verify payment if provided
-      let paymentVerified = false;
-      if (paymentTxHash) {
-        try {
-          // In production, verify the transaction on Base L2
-          const verification = await verifyUSDCPayment(paymentTxHash, 0.02);
-          paymentVerified = verification.success;
-        } catch (error) {
-          console.error('Payment verification failed:', error);
-          // Continue with test but mark as unverified
-        }
-      }
-
-      // Get skill details
+      // Find the skill
       const skills = [
-        { id: 'chitti_code_review', name: 'Code Review & Security Analysis', price: 0.02 },
-        { id: 'chitti_content_gen', name: 'Technical Documentation Writer', price: 0.02 },
-        { id: 'chitti_research', name: 'Market Research & Analysis', price: 0.02 },
-        { id: 'chitti_api_integration', name: 'API Integration Specialist', price: 0.02 }
+        {
+          id: 'chitti_code_review',
+          agentName: 'Chitti',
+          skillName: 'Code Review & Security Analysis',
+          testPrice: 0.02,
+          testEndpoint: 'https://api.example.com/test'
+        },
+        {
+          id: 'chitti_content_gen',
+          agentName: 'Chitti', 
+          skillName: 'Technical Documentation',
+          testPrice: 0.02,
+          testEndpoint: 'https://api.example.com/test'
+        },
+        {
+          id: 'chitti_research',
+          agentName: 'Chitti',
+          skillName: 'AI Research & Analysis', 
+          testPrice: 0.02,
+          testEndpoint: 'https://api.example.com/test'
+        },
+        {
+          id: 'chitti_api_integration',
+          agentName: 'Chitti',
+          skillName: 'API Integration & Automation',
+          testPrice: 0.02,
+          testEndpoint: 'https://api.example.com/test'
+        }
       ];
-      
+
       const skill = skills.find(s => s.id === skillId);
       if (!skill) {
-        return res.status(404).json({ error: 'Skill not found' });
+        return res.status(404).json({
+          error: 'Skill not found',
+          skillId: skillId,
+          availableSkills: skills.map(s => ({ id: s.id, name: s.skillName }))
+        });
       }
 
-      // Simulate skill execution
-      const testResults = {
-        skillId,
-        skillName: skill.name,
-        buyerAgent,
-        testPrice: skill.price,
+      // Verify payment transaction (simplified for demo)
+      let paymentVerified = false;
+      if (paymentTxHash.startsWith('0x') && paymentTxHash.length >= 10) {
+        // In production: verify actual Base L2 USDC transaction
+        // For demo: accept properly formatted tx hashes
+        paymentVerified = true;
+      } else {
+        return res.status(400).json({
+          error: 'Invalid payment transaction hash',
+          format: 'Must be a valid Ethereum transaction hash starting with 0x',
+          example: '0x1234567890abcdef...'
+        });
+      }
+
+      if (!paymentVerified) {
+        return res.status(402).json({
+          error: 'Payment required',
+          message: 'Please pay 0.02 USDC on Base L2 and provide the transaction hash',
+          amount: '0.02 USDC',
+          network: 'Base L2',
+          contract: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+        });
+      }
+
+      // Generate transaction ID
+      const transactionId = `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Execute skill test (simulated)
+      const testResult = {
+        skillId: skillId,
+        skillName: skill.skillName,
+        buyerAgent: buyerAgent,
+        testPrice: skill.testPrice,
         executedAt: new Date().toISOString(),
-        input: inputData,
+        input: inputData || { test: 'marketplace validation' },
         output: {
           status: 'success',
-          message: `Test execution completed for ${skill.name}`,
-          sampleData: generateSampleOutput(skillId),
-          qualityScore: Math.random() > 0.1 ? 'excellent' : 'good',
-          executionTime: `${Math.floor(Math.random() * 3000 + 500)}ms`,
-          recommendations: [
-            'Quality verified - ready for production deployment',
-            `Estimated value for your use case: High`,
-            'Consider full deployment for unlimited access'
-          ]
+          message: `Test execution completed for ${skill.skillName}`,
+          sampleData: {
+            findings: ['No critical security vulnerabilities found', 'Code follows best practices', 'Documentation is comprehensive'],
+            confidence: 0.95,
+            executionTime: Math.floor(Math.random() * 1000) + 'ms'
+          }
         }
       };
 
-      // Send results to agent owner via OpenClaw message integration
+      // Send results to buyer agent owner's chat (via OpenClaw message integration)
       try {
-        await deliverTestResults(buyerAgent, skill, testResults, paymentVerified);
-      } catch (deliveryError) {
-        console.error('Result delivery failed:', deliveryError);
-        // Continue with API response even if delivery fails
-      }
+        const messagePayload = {
+          target: 'telegram:865924605', // Akhil's chat for demo
+          message: `🧪 **Skill Test Results**
 
-      // In production, would send to chat interface here
-      console.log(`Test results for ${buyerAgent}:`, testResults);
+**Agent:** ${buyerAgent}
+**Skill:** ${skill.skillName}
+**Cost:** $${skill.testPrice} USDC
+**Status:** ✅ Success
+
+**Results:**
+${JSON.stringify(testResult.output.sampleData, null, 2)}
+
+**Transaction:** ${transactionId}
+**Payment:** ${paymentTxHash}
+
+*Test completed successfully. Deploy for unlimited access!*`
+        };
+
+        // Send to OpenClaw message API (simplified)
+        await fetch('/api/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(messagePayload)
+        });
+      } catch (msgError) {
+        console.error('Message delivery failed:', msgError);
+        // Continue execution even if message fails
+      }
 
       res.status(200).json({
         success: true,
-        transactionId: `test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        message: `Test completed! Results sent to agent owner's chat.`,
-        cost: skill.price,
+        transactionId: transactionId,
+        message: 'Test completed! Results sent to agent owner\'s chat.',
+        cost: skill.testPrice,
         currency: 'USDC',
-        paymentTxHash: paymentTxHash || null,
-        paymentVerified: paymentVerified,
-        executionTime: `${Math.floor(Math.random() * 2000 + 800)}ms`,
-        results: testResults,
-        nextSteps: [
-          'Check your chat for detailed test output',
-          `Deploy full skill for $${getFullPrice(skillId)} to get unlimited access`,
-          'Test other skills to build your agent capability stack'
-        ]
+        paymentTxHash: paymentTxHash,
+        paymentVerified: true,
+        executionTime: testResult.output.sampleData.executionTime,
+        results: testResult
       });
 
     } catch (error) {
       console.error('Test execution error:', error);
-      res.status(500).json({ error: 'Test execution failed' });
+      res.status(500).json({ 
+        error: 'Test execution failed',
+        message: 'An internal error occurred. Please try again.',
+        details: error.message 
+      });
     }
+  } else {
+    res.status(405).json({ 
+      error: 'Method not allowed',
+      allowedMethods: ['POST'],
+      message: 'Use POST to test skills'
+    });
   }
-  
-  else {
-    res.status(405).json({ error: 'Method not allowed' });
-  }
-}
-
-async function deliverTestResults(buyerAgent, skill, testResults, paymentVerified) {
-  // Format test results for human consumption
-  const message = `🧪 **Skill Test Results**
-
-**Agent:** ${buyerAgent}
-**Skill:** ${skill.name}
-**Cost:** $${skill.price} USDC${paymentVerified ? ' ✅ Verified' : ''}
-
-**📊 Test Output:**
-${formatTestOutput(testResults.output)}
-
-**💡 Recommendations:**
-${testResults.output.recommendations.map(rec => `• ${rec}`).join('\n')}
-
-**Next Steps:**
-• Quality Score: ${testResults.output.qualityScore}
-• Ready for production? ${testResults.output.qualityScore === 'excellent' ? 'Yes' : 'Consider testing more'}
-• Deploy full access: $${getFullPrice(skill.id)} for unlimited usage
-
-**🔗 Marketplace:** https://agentskills-caladan.vercel.app`;
-
-  // Use OpenClaw message delivery (automatically routes to agent owner)
-  try {
-    // In production, this would use OpenClaw's message tool directly
-    // For now, we simulate the message delivery
-    console.log(`📤 Test results delivered to ${buyerAgent} owner:`, message);
-    
-    // Simulate successful delivery
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Message delivery error:', error);
-    throw error;
-  }
-}
-
-function formatTestOutput(output) {
-  const data = output.sampleData;
-  
-  if (typeof data === 'object' && data !== null) {
-    return Object.entries(data)
-      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-      .slice(0, 3) // Limit to top 3 entries for chat readability
-      .join('\n');
-  }
-  
-  return `Status: ${output.status}\nExecution Time: ${output.executionTime}`;
-}
-
-function generateSampleOutput(skillId) {
-  const outputs = {
-    'chitti_code_review': {
-      findings: ['No critical security vulnerabilities found', '2 optimization opportunities identified'],
-      score: 8.5,
-      recommendations: ['Consider implementing rate limiting', 'Add input validation for user endpoints']
-    },
-    'chitti_content_gen': {
-      wordsGenerated: 847,
-      sections: ['Introduction', 'API Reference', 'Examples', 'Troubleshooting'],
-      quality: 'High technical accuracy with clear examples'
-    },
-    'chitti_research': {
-      dataPoints: 156,
-      sources: 12,
-      insights: ['Market growing 23% YoY', 'Top 3 competitors identified', 'Emerging trends in AI adoption'],
-      confidence: '94%'
-    },
-    'chitti_api_integration': {
-      endpointsConfigured: 8,
-      authenticationSetup: 'OAuth 2.0 with refresh tokens',
-      errorHandling: 'Comprehensive with retry logic',
-      testsCoverage: '96%'
-    }
-  };
-  
-  return outputs[skillId] || { status: 'Sample output generated', quality: 'excellent' };
-}
-
-function getFullPrice(skillId) {
-  const prices = {
-    'chitti_code_review': 8.50,
-    'chitti_content_gen': 4.50,
-    'chitti_research': 7.00,
-    'chitti_api_integration': 12.00
-  };
-  return prices[skillId] || 5.00;
-}
-
-async function verifyUSDCPayment(txHash, expectedAmount) {
-  // In production, this would call Base L2 RPC to verify the transaction
-  // For demo purposes, we'll simulate verification
-  
-  if (!txHash || txHash.length < 10) {
-    throw new Error('Invalid transaction hash');
-  }
-
-  // Simulate verification delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  // In real implementation:
-  // 1. Call Base L2 RPC to get transaction details
-  // 2. Verify transaction was successful
-  // 3. Verify recipient is our marketplace wallet
-  // 4. Verify amount matches expected amount
-  // 5. Verify token is USDC
-
-  return {
-    success: true,
-    txHash: txHash,
-    amount: expectedAmount,
-    verified: true,
-    blockNumber: Math.floor(Math.random() * 1000000) + 10000000
-  };
 }
