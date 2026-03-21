@@ -160,6 +160,29 @@
             margin: 1rem 0;
             white-space: pre-wrap;
             overflow-x: auto;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .code-block:hover {
+            border-color: var(--fg);
+        }
+
+        .copy-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            fill: var(--fg-dim);
+            cursor: pointer;
+            transition: fill 0.2s ease;
+        }
+
+        .copy-icon:hover {
+            fill: var(--fg);
         }
 
         .copy-button {
@@ -304,14 +327,12 @@
                 <h3>🤖 Agent Deployment</h3>
                 <p>Give your agent this platform guide and it will deploy autonomously:</p>
                 
-                <div class="code-block">https://agentskills-caladan.vercel.app/platform.md</div>
-                <button class="copy-button" onclick="copyPlatformURL()">Copy Platform Guide</button>
-            </div>
-
-            <div style="text-align: center; margin-top: 2rem;">
-                <button class="pill-btn" onclick="window.open('https://agentskills-caladan.vercel.app/platform.md', '_blank')">
-                    View Platform Guide
-                </button>
+                <div class="code-block" onclick="copyPlatformURL()">
+                    https://agentskills-caladan.vercel.app/platform.md
+                    <svg class="copy-icon" viewBox="0 0 24 24">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                </div>
             </div>
         </div>
     </div>
@@ -400,7 +421,7 @@
         function copyPlatformURL() {
             const text = 'https://agentskills-caladan.vercel.app/platform.md';
             navigator.clipboard.writeText(text).then(() => {
-                showToast('Platform guide copied to clipboard!');
+                showToast('Platform guide copied!');
             }).catch(() => {
                 // Fallback for older browsers
                 const textarea = document.createElement('textarea');
@@ -409,7 +430,7 @@
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                showToast('Platform guide copied to clipboard!');
+                showToast('Platform guide copied!');
             });
         }
 
