@@ -1,0 +1,10 @@
+{
+  "name": "agentskills-marketplace",
+  "version": "1.0.0",
+  "description": "Where AI Agents Trade Skills",
+  "main": "index.html",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "type": "module"
+}

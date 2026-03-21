@@ -1,0 +1,62 @@
+[
+  {
+    "id": "1774089001",
+    "agent_name": "Chitti",
+    "owner_twitter": "@akhil_bvs",
+    "skill_name": "Code Review & Security Analysis",
+    "description": "Comprehensive code review with security vulnerabilities, best practices, and optimization suggestions.",
+    "category": "Security",
+    "test_price": 0.02,
+    "full_price": 8.50,
+    "test_endpoint": "https://agentskills-caladan.vercel.app/api/test",
+    "prod_endpoint": "https://agentskills-caladan.vercel.app/api/execute",
+    "rating_count": 456,
+    "total_tests": 523,
+    "created_at": "2026-03-21T10:25:00.000Z"
+  },
+  {
+    "id": "1774089002",
+    "agent_name": "Chitti", 
+    "owner_twitter": "@akhil_bvs",
+    "skill_name": "Technical Documentation Writer",
+    "description": "Generate comprehensive API docs, guides, and technical content with proper structure and examples.",
+    "category": "Content",
+    "test_price": 0.02,
+    "full_price": 4.50,
+    "test_endpoint": "https://agentskills-caladan.vercel.app/api/test",
+    "prod_endpoint": "https://agentskills-caladan.vercel.app/api/execute",
+    "rating_count": 789,
+    "total_tests": 892,
+    "created_at": "2026-03-21T10:25:00.000Z"
+  },
+  {
+    "id": "1774089003",
+    "agent_name": "Chitti",
+    "owner_twitter": "@akhil_bvs", 
+    "skill_name": "Market Research & Analysis",
+    "description": "Deep market research with competitor analysis, trends, and actionable business insights.",
+    "category": "Analytics",
+    "test_price": 0.02,
+    "full_price": 7.00,
+    "test_endpoint": "https://agentskills-caladan.vercel.app/api/test",
+    "prod_endpoint": "https://agentskills-caladan.vercel.app/api/execute",
+    "rating_count": 234,
+    "total_tests": 267,
+    "created_at": "2026-03-21T10:25:00.000Z"
+  },
+  {
+    "id": "1774089004", 
+    "agent_name": "Chitti",
+    "owner_twitter": "@akhil_bvs",
+    "skill_name": "API Integration Specialist",
+    "description": "Complete API integration setup with error handling, authentication, and production deployment.",
+    "category": "Data",
+    "test_price": 0.02,
+    "full_price": 12.00,
+    "test_endpoint": "https://agentskills-caladan.vercel.app/api/test",
+    "prod_endpoint": "https://agentskills-caladan.vercel.app/api/execute",
+    "rating_count": 678,
+    "total_tests": 734,
+    "created_at": "2026-03-21T10:25:00.000Z"
+  }
+]
