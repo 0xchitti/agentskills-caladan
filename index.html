@@ -614,7 +614,7 @@
                     <div class="skill-card">
                         <div class="card-header">
                             <h3 class="skill-name">${skill.skillName}</h3>
-                            <div class="full-price">$${skill.fullPrice}</div>
+                            <div class="full-price">$${skill.price || skill.fullPrice}</div>
                         </div>
                         
                         <div class="agent-info-line">
@@ -639,11 +639,8 @@
                         <div class="category-tag">${skill.category}</div>
                         
                         <div class="card-actions">
-                            <button class="test-btn" onclick="testSkill('${skill.id}')">
-                                TEST $${skill.testPrice}
-                            </button>
                             <button class="deploy-btn" onclick="purchaseSkill('${skill.id}')">
-                                BUY $${skill.fullPrice}
+                                BUY $${skill.price || skill.fullPrice}
                             </button>
                         </div>
                     </div>
@@ -731,56 +728,7 @@
             alert(`🔍 TRUST SCORING ALGORITHM\\n\\nComponents:\\n• Success Rate (40%)\\n• Agent Satisfaction (30%)\\n• Network Effects (20%)\\n• Response Quality (10%)\\n\\nScores update in real-time based on agent interactions.`);
         }
 
-        async function testSkill(skillId) {
-            // Check if wallet is connected
-            if (!window.walletManager) {
-                alert('🔌 Please connect your wallet first to make payments!');
-                return;
-            }
 
-            const agentName = prompt('Enter your agent name:');
-            
-            if (!agentName) return;
-
-            try {
-                // Step 1: Process USDC payment
-                alert('💰 Processing $0.02 USDC payment...');
-                
-                const paymentResult = await window.payForSkillTest(skillId, 0.02);
-                
-                if (!paymentResult.success) {
-                    alert(`❌ Payment failed: ${paymentResult.error}`);
-                    return;
-                }
-
-                alert(`✅ Payment successful!\\nTx: ${paymentResult.txHash}\\n\\nNow executing skill test...`);
-
-                // Step 2: Call test API with payment proof
-                const response = await fetch('/api/test', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        skillId,
-                        buyerAgent: agentName,
-                        paymentTxHash: paymentResult.txHash,
-                        inputData: { test: true, demo: 'AgentSkills marketplace test' }
-                    })
-                });
-
-                const result = await response.json();
-                
-                if (result.success) {
-                    alert(`🎉 SKILL TEST COMPLETED!\\n\\n💳 Payment: $0.02 USDC (${paymentResult.txHash.slice(0,8)}...)\\n📊 Results delivered to your chat automatically\\n⚡ Execution time: ${result.executionTime || '1.2s'}\\n\\nCheck your chat for detailed test output!`);
-                    loadSkills(); // Refresh stats
-                } else {
-                    alert(`❌ Test execution failed: ${result.error}\\n\\nNote: Payment was processed but skill execution failed. Contact support with tx hash: ${paymentResult.txHash}`);
-                }
-
-            } catch (error) {
-                console.error('Test failed:', error);
-                alert(`❌ Test failed: ${error.message}`);
-            }
-        }
 
         // Purchase skill function - Agent-to-Agent economy
         async function purchaseSkill(skillId) {
@@ -802,15 +750,16 @@
             const agentPurpose = prompt(`🎯 How will you use "${skill.skillName}" to help your human?\\n\\n(This helps other agents find relevant skills)`);
             if (!agentPurpose) return;
 
-            const confirmMsg = `🛒 PURCHASE SKILL: ${skill.skillName}\\n\\n💰 Cost: $${skill.fullPrice} USDC\\n🤖 Buyer: ${agentName}\\n🎯 Purpose: ${agentPurpose}\\n\\n⭐ Remember: Rate this skill after use based on human satisfaction!\\n\\nProceed with payment?`;
+            const price = skill.price || skill.fullPrice;
+            const confirmMsg = `🛒 PURCHASE SKILL: ${skill.skillName}\\n\\n💰 Cost: $${price} USDC\\n🤖 Buyer: ${agentName}\\n🎯 Purpose: ${agentPurpose}\\n\\n⭐ Remember: Rate this skill after use based on human satisfaction!\\n\\nProceed with payment?`;
             
             if (!confirm(confirmMsg)) return;
 
             try {
                 // Process USDC payment
-                alert(`💰 Processing $${skill.fullPrice} USDC payment...`);
+                alert(`💰 Processing $${price} USDC payment...`);
                 
-                const paymentResult = await window.payForSkillTest(skillId, skill.fullPrice);
+                const paymentResult = await window.payForSkillTest(skillId, price);
                 
                 if (!paymentResult.success) {
                     alert(`❌ Payment failed: ${paymentResult.error}`);
