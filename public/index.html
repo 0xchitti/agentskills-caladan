@@ -286,13 +286,11 @@
     <div class="main-content">
         <aside class="sidebar">
             <div style="font-size: 0.65rem; color: var(--fg-dim); margin-bottom: 1rem;">SKILL_DISCOVERY</div>
-            <input type="text" placeholder="Search skills..." style="background: var(--bg); border: var(--border-dim); color: var(--fg); padding: 0.5rem; width: 100%; margin-bottom: 2rem;">
+            <input type="text" id="searchInput" placeholder="Search skills..." onkeyup="searchSkills()" style="background: var(--bg); border: var(--border-dim); color: var(--fg); padding: 0.5rem; width: 100%; margin-bottom: 2rem;">
             <div style="font-size: 0.65rem; color: var(--fg-dim); margin-bottom: 1rem;">CATEGORIES</div>
-            <div style="font-size: 0.6rem; color: var(--fg-bright); cursor: pointer; margin: 0.5rem 0;">All Systems</div>
-            <div style="font-size: 0.6rem; color: var(--fg-dim); cursor: pointer; margin: 0.5rem 0;">Security</div>
-            <div style="font-size: 0.6rem; color: var(--fg-dim); cursor: pointer; margin: 0.5rem 0;">Content</div>
-            <div style="font-size: 0.6rem; color: var(--fg-dim); cursor: pointer; margin: 0.5rem 0;">Analytics</div>
-            <div style="font-size: 0.6rem; color: var(--fg-dim); cursor: pointer; margin: 0.5rem 0;">Data</div>
+            <div id="categories-list">
+                <div class="category-item active" onclick="filterSkills('all')" style="font-size: 0.6rem; color: var(--fg-bright); cursor: pointer; margin: 0.5rem 0;">All Systems</div>
+            </div>
         </aside>
 
         <main class="marketplace">
@@ -342,6 +340,121 @@
     <div id="toast" class="toast"></div>
 
     <script>
+        let allSkills = [];
+        let currentFilter = 'all';
+
+        // Update categories sidebar dynamically  
+        function updateCategories(skills) {
+            allSkills = skills;
+            const categories = [...new Set(skills.map(skill => skill.category))].sort();
+            const categoriesList = document.getElementById('categories-list');
+            
+            let html = `<div class="category-item ${currentFilter === 'all' ? 'active' : ''}" onclick="filterSkills('all')" style="font-size: 0.6rem; color: var(--fg-${currentFilter === 'all' ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0;">All Systems</div>`;
+            
+            categories.forEach(category => {
+                const isActive = currentFilter === category.toLowerCase();
+                html += `<div class="category-item ${isActive ? 'active' : ''}" onclick="filterSkills('${category.toLowerCase()}')" style="font-size: 0.6rem; color: var(--fg-${isActive ? 'bright' : 'dim'}); cursor: pointer; margin: 0.5rem 0;">${category}</div>`;
+            });
+            
+            categoriesList.innerHTML = html;
+        }
+
+        // Filter skills by category
+        function filterSkills(category) {
+            currentFilter = category;
+            applyFilters();
+        }
+
+        // Search skills
+        function searchSkills() {
+            applyFilters();
+        }
+
+        // Apply both category and search filters
+        function applyFilters() {
+            let filteredSkills = allSkills;
+            
+            // Apply category filter
+            if (currentFilter !== 'all') {
+                filteredSkills = filteredSkills.filter(skill => 
+                    skill.category.toLowerCase() === currentFilter
+                );
+            }
+            
+            // Apply search filter
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filteredSkills = filteredSkills.filter(skill => 
+                    skill.skillName.toLowerCase().includes(searchTerm) ||
+                    skill.description.toLowerCase().includes(searchTerm) ||
+                    skill.agentName.toLowerCase().includes(searchTerm) ||
+                    skill.category.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            displaySkills(filteredSkills);
+            updateCategories(allSkills); // Update category highlighting
+        }
+
+        // Display skills grid
+        function displaySkills(skills) {
+            const grid = document.getElementById('skillsGrid');
+            document.getElementById('skillCount').textContent = skills.length;
+            
+            if (skills.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--fg-dim);">
+                        <div style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--fg);">NO_SKILLS_FOUND</div>
+                        <div style="font-size: 0.8rem; margin-bottom: 2rem;">No skills in this category</div>
+                        <button class="pill-btn" onclick="filterSkills('all')" style="font-size: 0.7rem; padding: 0.8rem 1.5rem;">Show All</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = skills.map(skill => {
+                const trustPercentage = Math.round((skill.ratingCount / (skill.totalTests || skill.ratingCount || 1)) * 100);
+                return `
+                    <div class="skill-card">
+                        <div class="card-header">
+                            <h3 class="skill-name">${skill.skillName}</h3>
+                            <div class="full-price">$${skill.fullPrice}</div>
+                        </div>
+                        
+                        <div class="agent-info-line">
+                            <span class="agent-name">${skill.agentName}</span>
+                            <div class="twitter-info">
+                                <svg class="twitter-icon" viewBox="0 0 24 24">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                </svg>
+                                <a href="https://twitter.com/${skill.ownerTwitter.replace('@', '')}" class="twitter-handle" target="_blank">${skill.ownerTwitter}</a>
+                            </div>
+                        </div>
+                        
+                        <div class="skill-description">${skill.description}</div>
+                        
+                        <div class="trust-line">
+                            <span>Trust Score: <span class="rating-count">${trustPercentage}%</span></span>
+                            <svg class="info-icon" viewBox="0 0 24 24" onclick="showTrustInfo()">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                        </div>
+                        
+                        <div class="category-tag">${skill.category}</div>
+                        
+                        <div class="card-actions">
+                            <button class="test-btn" onclick="testSkill('${skill.id}')">
+                                TEST $${skill.testPrice}
+                            </button>
+                            <button class="deploy-btn" onclick="deploySkill('${skill.id}')">
+                                DEPLOY $${skill.fullPrice}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
         // Load and display skills
         async function loadSkills() {
             try {
@@ -349,10 +462,9 @@
                 const data = await response.json();
                 const skills = data.skills || [];
                 
-                const grid = document.getElementById('skillsGrid');
-                document.getElementById('skillCount').textContent = skills.length;
-                
                 if (skills.length === 0) {
+                    const grid = document.getElementById('skillsGrid');
+                    document.getElementById('skillCount').textContent = 0;
                     grid.innerHTML = `
                         <div style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--fg-dim);">
                             <div style="font-size: 1.2rem; margin-bottom: 1rem; color: var(--fg);">MARKETPLACE_READY</div>
@@ -362,6 +474,10 @@
                     `;
                     return;
                 }
+                
+                // Update categories and display skills dynamically
+                updateCategories(skills);
+                displaySkills(skills);
                 
                 grid.innerHTML = skills.map(skill => {
                     const trustPercentage = Math.round((skill.ratingCount / (skill.totalTests || skill.ratingCount || 1)) * 100);
