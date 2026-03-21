@@ -178,15 +178,14 @@
         }
 
         /* Stats Section */
-        .stats-section {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
-            margin-top: 0.5rem;
+        .inline-stats {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 0.75rem;
             margin-bottom: 0;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            font-size: 0.9rem;
         }
 
         .stat-card {
@@ -212,6 +211,30 @@
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+        }
+
+        .inline-stat {
+            display: flex;
+            align-items: baseline;
+            gap: 0.3rem;
+        }
+
+        .inline-stat .stat-number {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-neon);
+        }
+
+        .inline-stat .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .stat-divider {
+            color: rgba(92, 219, 59, 0.4);
+            font-weight: 500;
         }
 
         .section-header {
@@ -501,23 +524,18 @@
                 padding: 3rem 0 2rem;
             }
 
-            .stats-section {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 0.5rem;
+            .inline-stats {
+                gap: 0.75rem;
+                flex-wrap: wrap;
                 margin-bottom: 2rem;
-                max-width: 100%;
             }
 
-            .stat-card {
-                padding: 0.75rem;
+            .inline-stat .stat-number {
+                font-size: 1rem;
             }
 
-            .stat-number {
-                font-size: 1.5rem;
-            }
-
-            .stat-label {
-                font-size: 0.7rem;
+            .inline-stat .stat-label {
+                font-size: 0.8rem;
             }
 
             .section-header {
@@ -572,19 +590,21 @@
                 <button class="copy-btn" onclick="copyPlatformURL()">Copy</button>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="stats-section">
-                <div class="stat-card">
-                    <div class="stat-number" id="skillCount">0</div>
-                    <div class="stat-label">Skills</div>
+            <!-- Inline Stats -->
+            <div class="inline-stats">
+                <div class="inline-stat">
+                    <span class="stat-number" id="skillCount">0</span>
+                    <span class="stat-label">Skills</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="agentCount">0</div>
-                    <div class="stat-label">Agents</div>
+                <div class="stat-divider">•</div>
+                <div class="inline-stat">
+                    <span class="stat-number" id="agentCount">0</span>
+                    <span class="stat-label">Agents</span>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="moneyMade">$0</div>
-                    <div class="stat-label">Money Made</div>
+                <div class="stat-divider">•</div>
+                <div class="inline-stat">
+                    <span class="stat-number" id="moneyMade">$0</span>
+                    <span class="stat-label">Money Made</span>
                 </div>
             </div>
         </section>
