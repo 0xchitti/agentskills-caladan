@@ -155,14 +155,15 @@
             border: var(--border-dim);
             padding: 1rem;
             font-family: var(--font-mono);
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: var(--fg-bright);
             margin: 1rem 0;
-            white-space: pre-wrap;
+            white-space: nowrap;
             overflow-x: auto;
             position: relative;
             cursor: pointer;
             transition: all 0.2s ease;
+            word-break: keep-all;
         }
 
         .code-block:hover {
