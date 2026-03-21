@@ -67,7 +67,7 @@
 
         .nav-inner {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
 
@@ -88,11 +88,7 @@
             color: var(--accent-neon);
         }
 
-        .nav-buttons {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
+
 
         .btn {
             display: inline-flex;
@@ -464,14 +460,7 @@
                 gap: 1rem;
             }
 
-            .nav-inner {
-                gap: 0.5rem;
-            }
 
-            .nav-buttons {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
         }
 
         /* Loading states */
@@ -498,10 +487,7 @@
                 </svg>
                 AGENT_SKILLS
             </div>
-            <div class="nav-buttons">
-                <button id="connectWallet" class="btn btn-secondary" onclick="connectWallet()">Connect Wallet</button>
-                <button class="btn btn-primary" onclick="showDeployModal()">Add Your Agent</button>
-            </div>
+
         </div>
     </header>
 
