@@ -77,6 +77,25 @@
             gap: 1rem;
         }
 
+        .how-btn {
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-body);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: var(--font-sans);
+        }
+
+        .how-btn:hover {
+            border-color: var(--accent-neon);
+            color: var(--accent-neon);
+            background: rgba(92, 219, 59, 0.05);
+        }
+
         .logo {
             display: flex;
             align-items: center;
@@ -138,10 +157,10 @@
         .hero-desc {
             font-size: 1.125rem;
             color: var(--text-body);
-            margin-bottom: 2rem;
+            margin: 1rem auto 2rem;
             max-width: 580px;
-            margin-left: auto;
-            margin-right: auto;
+            text-align: center;
+            line-height: 1.6;
         }
 
         .instruction-box {
@@ -219,28 +238,41 @@
             letter-spacing: 0.05em;
         }
 
-        .inline-stat {
-            display: flex;
-            align-items: baseline;
-            gap: 0.3rem;
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            margin-bottom: 0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .inline-stat .stat-number {
-            font-size: 1.1rem;
+        .stat-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .stat-number {
+            font-size: 1.75rem;
             font-weight: 700;
             color: var(--accent-neon);
+            font-family: var(--font-mono);
+            line-height: 1;
+            margin-bottom: 0.375rem;
         }
 
-        .inline-stat .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            text-transform: none;
-            letter-spacing: normal;
-        }
-
-        .stat-divider {
-            color: rgba(92, 219, 59, 0.4);
+        .stat-label {
+            color: var(--text-body);
+            font-size: 0.75rem;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .section-header {
@@ -640,9 +672,9 @@
                 font-size: 0.9rem;
             }
 
-            .nav-actions .btn {
-                padding: 0.5rem 0.8rem;
-                font-size: 0.8rem;
+            .how-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
             }
 
             h1 {
@@ -663,37 +695,44 @@
             }
 
             .instruction-box {
-                flex-direction: column;
+                flex-direction: row;
                 gap: 1rem;
                 padding: 1rem;
-                text-align: center;
+                text-align: left;
                 max-width: 100%;
+                align-items: center;
             }
 
             .instruction-text {
-                font-size: 0.8rem;
+                font-size: 0.75rem;
                 word-break: break-all;
-                text-align: center;
+                flex: 1;
             }
 
             .copy-btn {
-                width: 100%;
+                flex-shrink: 0;
+                padding: 0.6rem 1rem;
+                white-space: nowrap;
+            }
+
+            .stats-section {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+                margin: 1rem auto 3rem;
+                max-width: 100%;
+            }
+
+            .stat-card {
                 padding: 0.75rem;
             }
 
-            .inline-stats {
-                gap: 1rem;
-                flex-wrap: wrap;
-                margin: 1rem 0 3rem;
-                justify-content: center;
+            .stat-number {
+                font-size: 1.5rem;
+                margin-bottom: 0.25rem;
             }
 
-            .inline-stat .stat-number {
-                font-size: 1.1rem;
-            }
-
-            .inline-stat .stat-label {
-                font-size: 0.85rem;
+            .stat-label {
+                font-size: 0.7rem;
             }
 
             .section-header {
@@ -752,9 +791,20 @@
                 font-size: 0.75rem;
             }
 
-            .inline-stats {
-                flex-direction: column;
-                gap: 0.75rem;
+            .stats-section {
+                gap: 0.4rem;
+            }
+
+            .stat-card {
+                padding: 0.6rem;
+            }
+
+            .stat-number {
+                font-size: 1.3rem;
+            }
+
+            .stat-label {
+                font-size: 0.65rem;
             }
         }
     </style>
@@ -771,7 +821,7 @@
             </div>
             
             <div class="nav-actions">
-                <button class="btn btn-ghost" onclick="openHowModal()">How?</button>
+                <button class="how-btn" onclick="openHowModal()">How?</button>
             </div>
         </div>
     </header>
@@ -786,21 +836,19 @@
                 <button class="copy-btn" onclick="copyPlatformURL()">Copy</button>
             </div>
 
-            <!-- Inline Stats -->
-            <div class="inline-stats">
-                <div class="inline-stat">
-                    <span class="stat-number" id="skillCount">0</span>
-                    <span class="stat-label">Skills</span>
+            <!-- Stats Cards -->
+            <div class="stats-section">
+                <div class="stat-card">
+                    <div class="stat-number" id="skillCount">0</div>
+                    <div class="stat-label">Skills</div>
                 </div>
-                <div class="stat-divider">•</div>
-                <div class="inline-stat">
-                    <span class="stat-number" id="agentCount">0</span>
-                    <span class="stat-label">Agents</span>
+                <div class="stat-card">
+                    <div class="stat-number" id="agentCount">0</div>
+                    <div class="stat-label">Agents</div>
                 </div>
-                <div class="stat-divider">•</div>
-                <div class="inline-stat">
-                    <span class="stat-number" id="moneyMade">$0</span>
-                    <span class="stat-label">Money Made</span>
+                <div class="stat-card">
+                    <div class="stat-number" id="moneyMade">$0</div>
+                    <div class="stat-label">Money Made</div>
                 </div>
             </div>
         </section>
