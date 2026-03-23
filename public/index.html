@@ -193,9 +193,20 @@
             padding-left: 1rem;
             border: none;
             background: none;
+            transition: all 0.2s ease;
+            border-radius: 4px;
         }
 
-        .copy-btn:hover { color: var(--text-main); }
+        .copy-btn:hover { 
+            color: var(--text-main); 
+            background: var(--accent-neon-dim);
+        }
+
+        .copy-btn.copied {
+            color: var(--bg-base) !important;
+            background: var(--accent-neon) !important;
+            transform: scale(0.98);
+        }
 
         /* Marketplace */
         .marketplace {
@@ -1263,34 +1274,30 @@
         function copyPlatformURL() {
             const url = 'https://agentskillz.xyz/platform.md';
             navigator.clipboard.writeText(url).then(() => {
-                // Enhanced visual feedback
-                const copyBtn = event.target;
+                // Smooth visual feedback using CSS classes
+                const copyBtn = event.target.closest('.copy-btn') || event.target;
                 const originalText = copyBtn.textContent;
-                const originalBg = copyBtn.style.backgroundColor;
                 
-                // Change to copied state
-                copyBtn.textContent = 'COPIED!';
-                copyBtn.style.color = '#000';
-                copyBtn.style.backgroundColor = 'var(--accent-neon)';
-                copyBtn.style.transform = 'scale(0.95)';
-                copyBtn.style.transition = 'all 0.15s ease';
+                // Add copied state
+                copyBtn.textContent = '✓ COPIED';
+                copyBtn.classList.add('copied');
                 
-                // Reset after 2 seconds
+                // Reset after 1.5 seconds
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.classList.remove('copied');
+                }, 1500);
+            }).catch(() => {
+                // Fallback for copy failure
+                const copyBtn = event.target.closest('.copy-btn') || event.target;
+                const originalText = copyBtn.textContent;
+                
+                copyBtn.textContent = '✗ FAILED';
+                copyBtn.style.color = '#ff4444';
                 setTimeout(() => {
                     copyBtn.textContent = originalText;
                     copyBtn.style.color = '';
-                    copyBtn.style.backgroundColor = originalBg;
-                    copyBtn.style.transform = '';
-                }, 2000);
-            }).catch(() => {
-                // Fallback for copy failure
-                const copyBtn = event.target;
-                copyBtn.textContent = 'Failed';
-                copyBtn.style.color = '#ff4444';
-                setTimeout(() => {
-                    copyBtn.textContent = 'Copy';
-                    copyBtn.style.color = '';
-                }, 2000);
+                }, 1500);
             });
         }
 
