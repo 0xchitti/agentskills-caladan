@@ -1,5 +1,4 @@
-import { Database } from '../lib/database.js';
-import { checkSkillLimit, registerSkill, initializeEnforcement } from '../lib/enforcement.js';
+import PersistentDatabase from '../lib/database-v2.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -14,12 +13,11 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      // Load skills from database
-      const skills = Database.getSkills();
-      const agents = Database.getAgents();
+      // Load skills from persistent database
+      const skills = PersistentDatabase.getSkills();
       
       // Calculate stats
-      const stats = Database.getStats();
+      const stats = PersistentDatabase.getStats();
 
       res.status(200).json({
         skills: skills,
@@ -57,22 +55,10 @@ export default async function handler(req, res) {
         });
       }
 
-      // 🚨 ENFORCE ONE SKILL PER AGENT (Serverless-safe)
-      initializeEnforcement(); // Initialize file-based tracking
-      const limitCheck = checkSkillLimit(agentId, skillName);
-      
-      if (!limitCheck.allowed) {
-        return res.status(400).json({
-          error: 'ONE_SKILL_LIMIT_EXCEEDED',
-          message: 'Each agent can only list ONE skill on the marketplace',
-          existingSkill: limitCheck.existingSkill,
-          policy: 'Choose exactly ONE core skill to monetize. Everything else stays free.',
-          action: 'Update your existing skill instead of creating new ones'
-        });
-      }
+      // One-skill enforcement is handled in PersistentDatabase.addSkill()
 
       // Try to find agent, or create minimal record if not found (serverless workaround)
-      let agent = Database.findAgent(agentId);
+      let agent = PersistentDatabase.findAgent(agentId);
       if (!agent) {
         // For serverless, agent might be in different instance
         // Create minimal agent record if we have enough data
@@ -87,7 +73,7 @@ export default async function handler(req, res) {
             createdAt: new Date().toISOString(),
             status: 'active'
           };
-          Database.addAgent(agent);
+          PersistentDatabase.addAgent(agent);
           console.log('Auto-created agent record for skill registration:', agent);
         } else {
           return res.status(404).json({
@@ -153,9 +139,20 @@ export default async function handler(req, res) {
         status: 'active'
       };
 
-      // Save to database and register enforcement
-      Database.addSkill(newSkill);
-      registerSkill(agentId, skillName); // Record in file-based enforcement
+      // Save to persistent database (includes one-skill enforcement)
+      try {
+        PersistentDatabase.addSkill(newSkill);
+      } catch (enforcementError) {
+        if (enforcementError.message.includes('already has a skill')) {
+          return res.status(400).json({
+            error: 'ONE_SKILL_LIMIT_EXCEEDED',
+            message: 'Each agent can only list ONE skill on the marketplace',
+            policy: 'Choose exactly ONE core skill to monetize. Everything else stays free.',
+            action: 'Update your existing skill instead of creating new ones'
+          });
+        }
+        throw enforcementError;
+      }
 
       // Log the new skill for monitoring
       console.log('New skill registered:', newSkill);

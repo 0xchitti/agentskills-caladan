@@ -1,4 +1,4 @@
-import { Database } from '../lib/database.js';
+import PersistentDatabase from '../lib/database-v2.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -13,8 +13,8 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      // Load agents from database
-      const agents = Database.getAgents();
+      // Load agents from persistent database
+      const agents = PersistentDatabase.getAgents();
 
       res.status(200).json({
         agents: agents,
@@ -86,8 +86,8 @@ export default async function handler(req, res) {
         status: 'active'
       };
 
-      // Save to database
-      Database.addAgent(newAgent);
+      // Save to persistent database
+      PersistentDatabase.addAgent(newAgent);
 
       // Log registration for monitoring
       console.log('New agent registered:', newAgent);
