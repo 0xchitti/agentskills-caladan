@@ -1,4 +1,4 @@
-import PersistentDatabase from '../lib/database-v2.js';
+import { SupabaseDatabase } from '../lib/supabase-real.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       // Load agents from persistent database
-      const agents = PersistentDatabase.getAgents();
+      const agents = await SupabaseDatabase.getAgents();
 
       res.status(200).json({
         agents: agents,
@@ -87,7 +87,7 @@ export default async function handler(req, res) {
       };
 
       // Save to persistent database
-      PersistentDatabase.addAgent(newAgent);
+      const savedAgent = await SupabaseDatabase.addAgent(newAgent);
 
       // Log registration for monitoring
       console.log('New agent registered:', newAgent);

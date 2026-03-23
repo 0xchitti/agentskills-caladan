@@ -1,4 +1,4 @@
-import PersistentDatabase from '../lib/database-v2.js';
+import { SupabaseDatabase } from '../lib/supabase-real.js';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -14,10 +14,10 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       // Load skills from persistent database
-      const skills = PersistentDatabase.getSkills();
+      const skills = await SupabaseDatabase.getSkills();
       
       // Calculate stats
-      const stats = PersistentDatabase.getStats();
+      const stats = await SupabaseDatabase.getStats();
 
       res.status(200).json({
         skills: skills,
