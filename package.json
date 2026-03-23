@@ -5,6 +5,7 @@
   "main": "index.html",
   "dependencies": {
     "@supabase/supabase-js": "^2.99.3",
+    "ethers": "^6.16.0",
     "pg": "^8.20.0"
   },
   "type": "module"

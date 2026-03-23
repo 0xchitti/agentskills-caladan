@@ -1,7 +1,8 @@
-// Purchase full skill access - agent-to-agent transaction
+// Purchase full skill access - agent-to-agent transaction  
 // Enables agents to buy skills from other agents using x402 on Base
 
 import { SupabaseDatabase } from '../lib/supabase-real.js';
+import SecureMarketplaceWallet from '../lib/secure-wallet.js';
 
 export default async function handler(req, res) {
     // CORS headers

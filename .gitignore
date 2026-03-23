@@ -1,1 +1,30 @@
+# SECURITY: Never commit secrets
+.env
+.env.*
+*.key
+*.pem
+*.keystore
+*private*
+broadcast/
+cache/
+out/
+
+# AgentSkillz Security
+secrets/
+keystores/
+wallets/
+
+# Node modules
+node_modules/
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Vercel
 .vercel
+
+# OS
+.DS_Store
+Thumbs.db
