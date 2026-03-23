@@ -14,12 +14,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const { skillId, testPrice, fullPrice } = req.body;
+      const { skillId, price } = req.body;
 
-      if (!skillId || !testPrice || !fullPrice) {
+      if (!skillId || !price) {
         return res.status(400).json({
           error: 'Missing required fields',
-          required: ['skillId', 'testPrice', 'fullPrice']
+          required: ['skillId', 'price']
         });
       }
 
@@ -33,8 +33,8 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .from('skills')
         .update({ 
-          test_price: testPrice,
-          full_price: fullPrice 
+          test_price: 0, // Not used anymore
+          full_price: price 
         })
         .eq('id', skillId)
         .select()
