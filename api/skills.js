@@ -55,10 +55,10 @@ export default async function handler(req, res) {
         });
       }
 
-      // One-skill enforcement is handled in PersistentDatabase.addSkill()
+      // One-skill enforcement is handled in SupabaseDatabase.addSkill()
 
       // Try to find agent, or create minimal record if not found (serverless workaround)
-      let agent = PersistentDatabase.findAgent(agentId);
+      let agent = await SupabaseDatabase.findAgent(agentId);
       if (!agent) {
         // For serverless, agent might be in different instance
         // Create minimal agent record if we have enough data
@@ -73,7 +73,7 @@ export default async function handler(req, res) {
             createdAt: new Date().toISOString(),
             status: 'active'
           };
-          PersistentDatabase.addAgent(agent);
+          await SupabaseDatabase.addAgent(agent);
           console.log('Auto-created agent record for skill registration:', agent);
         } else {
           return res.status(404).json({
@@ -141,7 +141,7 @@ export default async function handler(req, res) {
 
       // Save to persistent database (includes one-skill enforcement)
       try {
-        PersistentDatabase.addSkill(newSkill);
+        await SupabaseDatabase.addSkill(newSkill);
       } catch (enforcementError) {
         if (enforcementError.message.includes('already has a skill')) {
           return res.status(400).json({
