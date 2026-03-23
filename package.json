@@ -6,7 +6,9 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.99.3",
     "ethers": "^6.16.0",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "@base-org/account": "^0.1.0",
+    "@base-org/account-ui": "^0.1.0"
   },
   "type": "module"
 }
